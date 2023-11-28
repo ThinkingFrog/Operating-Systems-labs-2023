@@ -9,6 +9,6 @@ struct ClientInfo {
     pid_t child_pid;
     Conn *connection;
     size_t death_row;
-    int client_id;
+    unsigned int client_id;
     bool active;
 };
