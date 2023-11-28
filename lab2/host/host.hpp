@@ -34,7 +34,7 @@ class Host {
 
             Conn *connection = Conn::create(true, idx + 1);
 
-            cl_info_vec.emplace_back(ClientInfo{sem_host_msg, sem_client_msg, 0, connection, 0, (int)idx + 1, true});
+            cl_info_vec.emplace_back(ClientInfo{sem_host_msg, sem_client_msg, 0, connection, 0, idx + 1, true});
         }
     }
 
@@ -63,8 +63,22 @@ class Host {
         std::cout << "Playing with " << active_clients << " goats" << std::endl << std::endl;
 
         while (active_clients > 0) {
-            size_t wolf_roll = wolf.roll();
-            std::cout << "Wolf rolled " << wolf_roll << std::endl;
+            size_t wolf_roll = (size_t)-1;
+            pthread_t read_thread;
+            std::cout << "Input wolf roll value: ";
+
+            pthread_create(&read_thread, NULL, Host::manual_roll_input, &wolf_roll);
+            sleep(3);
+
+            if (wolf_roll == (size_t)-1) {
+                pthread_cancel(read_thread);
+                pthread_join(read_thread, NULL);
+                wolf_roll = wolf.roll();
+            } else {
+                pthread_join(read_thread, NULL);
+            }
+
+            std::cout << std::endl << "Wolf rolled " << wolf_roll << std::endl;
 
             for (auto &cl_info : cl_info_vec) {
                 if (!cl_info.active)
@@ -127,11 +141,24 @@ class Host {
             throw std::runtime_error("Couldn't create child proccess");
     }
 
+    static void *manual_roll_input(void *roll) {
+        size_t tmp;
+
+        if (std::cin.fail())
+            std::cin.clear();
+
+        std::cin >> tmp;
+
+        (*(size_t *)roll) = tmp;
+
+        pthread_exit(NULL);
+    }
+
     std::vector<ClientInfo> cl_info_vec;
     unsigned int active_clients;
     int min_clients = 1;
     int max_clients = 5;
-    const size_t sem_timeout_secs = 5;
+    const size_t sem_timeout_secs = 10;
 
     Wolf wolf;
     const size_t ALIVE_GOAT_GAP_REQUIRED = 70;

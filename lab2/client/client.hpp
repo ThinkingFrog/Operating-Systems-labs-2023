@@ -36,6 +36,6 @@ class Client {
     Goat goat;
     sem_t *sem_client_msg, *sem_host_msg;
     Conn *connection;
-    const size_t sem_timeout_secs = 5;
+    const size_t sem_timeout_secs = 10;
     int id;
 };
