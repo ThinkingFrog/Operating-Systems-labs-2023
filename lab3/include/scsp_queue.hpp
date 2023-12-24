@@ -15,7 +15,7 @@ class SCSPQueue {
     ~SCSPQueue() {
         QueueNode *node = head;
         while (node) {
-            QueueNode *next = node->next;
+            QueueNode *next = node->get_next();
             delete node;
             node = next;
         }
@@ -30,13 +30,13 @@ class SCSPQueue {
         ++size;
 
         if (head == nullptr) {
-            head = new QueueNode{val, nullptr};
+            head = new QueueNode(val, nullptr);
         } else {
             QueueNode *node = head;
-            while (node->next) {
-                node = node->next;
+            while (node->get_next()) {
+                node = node->get_next();
             }
-            node->next = new QueueNode{val, nullptr};
+            node->set_next(new QueueNode(val, nullptr));
         }
 
         pthread_mutex_unlock(&write_mutex);
@@ -51,9 +51,9 @@ class SCSPQueue {
 
         if (head != nullptr) {
             QueueNode *node = head;
-            head = head->next;
+            head = head->get_next();
 
-            ret_val = node->val;
+            ret_val = node->get_val();
             delete node;
         }
 
